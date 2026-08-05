@@ -1,0 +1,137 @@
+name: Build Desktop App
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows/amd64
+            artifact-name: DevWannaSpace-Windows-Setup
+            build-args: -nsis
+          - os: macos-latest
+            platform: darwin/universal
+            artifact-name: DevWannaSpace-macOS
+            build-args: ''
+          - os: ubuntu-latest
+            platform: linux/amd64
+            artifact-name: DevWannaSpace-Linux
+            build-args: '-tags webkit2_41'
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Install Linux Wails dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+
+      - name: Install Frontend Dependencies
+        working-directory: ./apps/web
+        run: npm install
+
+      - name: Install NSIS (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install nsis -y
+          "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Tidy Go Modules
+        working-directory: ./apps/desktop
+        run: go mod tidy
+
+      - name: Build Wails App
+        working-directory: ./apps/desktop
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || '' }}
+        run: wails build -platform ${{ matrix.platform }} ${{ matrix.build-args }}
+        
+      - name: Package Windows Installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd apps/desktop/build/bin
+          $installer = Get-ChildItem -Filter "*installer.exe" | Select-Object -First 1
+          if ($installer) {
+            Copy-Item $installer.FullName -Destination "DevWannaSpace-Setup-v1.0.0.exe"
+            Remove-Item "DevWannaSpace.exe" -Force -ErrorAction SilentlyContinue
+            Remove-Item $installer.FullName -Force -ErrorAction SilentlyContinue
+          }
+
+      - name: Package Linux (DEB & RPM)
+        if: runner.os == 'Linux'
+        run: |
+          # Setup package structure
+          mkdir -p pkg_root/usr/local/bin pkg_root/usr/share/applications pkg_root/usr/share/pixmaps pkg_root/DEBIAN
+          cp apps/desktop/build/bin/DevWannaSpace pkg_root/usr/local/bin/devwannaspace
+          
+          # Add Icon (falling back to logo.png)
+          if [ -f "apps/desktop/logo.png" ]; then
+            cp apps/desktop/logo.png pkg_root/usr/share/pixmaps/devwannaspace.png
+          fi
+          
+          # Create Desktop Entry
+          cat <<EOF > pkg_root/usr/share/applications/devwannaspace.desktop
+          [Desktop Entry]
+          Name=DevWannaSpace
+          Exec=devwannaspace
+          Icon=devwannaspace
+          Type=Application
+          Categories=Utility;
+          Terminal=false
+          EOF
+          
+          # Create Control file
+          cat <<EOF > pkg_root/DEBIAN/control
+          Package: devwannaspace
+          Version: 1.0.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Ryanda <ryanda@example.com>
+          Depends: libgtk-3-0, libwebkit2gtk-4.1-0
+          Description: The most powerful workspace
+           DevWannaSpace desktop application.
+          EOF
+          
+          # Build DEB
+          dpkg-deb --build pkg_root devwannaspace_1.0.0_amd64.deb
+          
+          # Build RPM using alien
+          sudo apt-get update && sudo apt-get install -y alien rpm
+          sudo alien --to-rpm devwannaspace_1.0.0_amd64.deb
+          
+          # Move to output folder
+          mv devwannaspace_1.0.0_amd64.deb apps/desktop/build/bin/
+          mv *.rpm apps/desktop/build/bin/ || true
+        
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: apps/desktop/build/bin/
+
+

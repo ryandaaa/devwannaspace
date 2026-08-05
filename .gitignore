@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.env*
+.dev.vars*
+
+# Wails
+apps/desktop/build/bin/
+
+# Expo / React Native
+.expo
+.expo-shared
+
+# Agent / Tooling
+.agents
+
+# Cloudflare
+.wrangler
+
+# Project Docs / Junk files
+DESIGN.md
+mobile_app_context.md
+MOBILE_PLAN.md
+PROJECT.md
+*.pdf
+*.zip
+*.deb
+*.rpm
+pkg_root

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./apps/mobile/*"
+      ]
+    }
+  },
+  "extends": "expo/tsconfig.base"
+}

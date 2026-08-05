@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>devwannaspace</title>
+    <!-- Tailwind Play CDN for Landing Page -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              canvas: '#010102',
+              'surface-1': '#0a0a0c',
+              'surface-2': '#101013',
+              'surface-3': '#17181c',
+              'surface-4': '#1f2025',
+              hairline: '#23252a',
+              'hairline-strong': '#34373c',
+              'hairline-tertiary': '#1b1d21',
+              ink: '#f7f8f8',
+              'ink-muted': '#d0d6e0',
+              'ink-subtle': '#8a8f98',
+              'ink-tertiary': '#62666d',
+              primary: '#5e6ad2',
+              'primary-hover': '#828fff',
+              'primary-focus': '#5e69d1',
+              'brand-secure': '#7a7fad',
+              'on-primary': '#ffffff',
+              'semantic-success': '#27a644',
+              'inverse-canvas': '#ffffff',
+              'inverse-ink': '#08080a',
+            },
+            fontFamily: {
+              display: ['Inter', 'SF Pro Display', '-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
+              text: ['Inter', 'SF Pro Display', '-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
+              mono: ['JetBrains Mono', 'ui-monospace', 'SF Mono', 'Menlo', 'monospace'],
+            },
+            borderRadius: {
+              'xs': '4px',
+              'sm': '6px',
+              'md': '8px',
+              'lg': '12px',
+              'xl': '16px',
+              'xxl': '24px',
+            },
+            maxWidth: {
+              'content': '1280px',
+            },
+          }
+        }
+      }
+    </script>
+    <style>
+      .tracking-display-xl { letter-spacing: -3px; }
+      .tracking-display-lg { letter-spacing: -1.8px; }
+      .tracking-display-md { letter-spacing: -1px; }
+      .tracking-headline { letter-spacing: -0.6px; }
+      .tracking-card-title { letter-spacing: -0.4px; }
+      .tracking-subhead { letter-spacing: -0.2px; }
+      .tracking-body-lg { letter-spacing: -0.1px; }
+      .tracking-body { letter-spacing: -0.05px; }
+      .tracking-eyebrow { letter-spacing: 0.4px; }
+      .tracking-wordmark { letter-spacing: -0.02em; }
+      .panel-highlight { position: relative; isolation: isolate; }
+      .panel-highlight::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0));
+        pointer-events: none;
+        border-radius: inherit;
+        z-index: 1;
+      }
+      .eyebrow {
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.30;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
